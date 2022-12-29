@@ -14,7 +14,8 @@ Usage:
 
 Available Commands:
   chunk       Chunk file(s) by a given number of lines
+  concat      Concatenate files in a directory into a single file. Output default `{dir}/all.txt`
   dedupe      Dedupe file(s)
   random      Randomize lines of file(s)
   split       Split file(s) by a delimiter and pluck ids
-  ```
+```
