@@ -218,3 +218,22 @@ func Test_ChunkByLines_EvenSplit(t *testing.T) {
 		t.Errorf("ChunkByLines() = %v, want %v", len(chunks), 2)
 	}
 }
+
+func Test_Diff(t *testing.T) {
+	base := map[string]struct{}{
+		"one":   {},
+		"two":   {},
+		"three": {},
+	}
+
+	lines := []string{"one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"}
+
+	n, diff := Diff(base, lines)
+	if n != 7 {
+		t.Errorf("Diff() = %v, want %v", n, 7)
+	}
+
+	if diff[0] != "four" {
+		t.Errorf("Diff() = %v, want %v", diff[0], "four")
+	}
+}

@@ -61,6 +61,44 @@ func ReadFile(file string) ([]string, error) {
 	return lines, scanner.Err()
 }
 
+// ReadFileToMap reads a file and returns the contents as a map[string]struct{}
+func ReadFileToMap(file string) (map[string]struct{}, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, fmt.Errorf("reading file: %w", err)
+	}
+	defer f.Close()
+
+	m := make(map[string]struct{})
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		m[scanner.Text()] = struct{}{}
+	}
+
+	return m, scanner.Err()
+}
+
+// ReadDirToMap reads a directory and returns the contents as a map[string]struct{}
+func ReadDirToMap(dir string) (map[string]struct{}, error) {
+	files, err := ReadDir(dir)
+	if err != nil {
+		return nil, fmt.Errorf("reading dir: %w", err)
+	}
+
+	m := make(map[string]struct{})
+	for _, file := range files {
+		lines, err := ReadFile(dir + "/" + file)
+		if err != nil {
+			return nil, fmt.Errorf("reading dir: %w", err)
+		}
+		for _, line := range lines {
+			m[line] = struct{}{}
+		}
+	}
+
+	return m, nil
+}
+
 // WriteFile writes a []string to a file
 func WriteFile(file string, lines []string) error {
 	f, err := os.Create(file)
@@ -451,4 +489,39 @@ func ChunkByLines(s []string, chunkSize int) [][]string {
 	}
 
 	return result
+}
+
+func Diff(src1 map[string]struct{}, src2 []string) (int, []string) {
+	var result []string
+	var n int
+	for _, line := range src2 {
+		if _, ok := src1[line]; !ok {
+			result = append(result, line)
+			n++
+		}
+	}
+
+	return n, result
+}
+
+// DiffFiles returns the difference between two files
+func DiffFiles(src1, src2, out string) (int, error) {
+	baseMap, err := ReadFileToMap(src1)
+	if err != nil {
+		return 0, fmt.Errorf("diff files: %w", err)
+	}
+
+	lines, err := ReadFile(src2)
+	if err != nil {
+		return 0, fmt.Errorf("diff files: %w", err)
+	}
+
+	n, result := Diff(baseMap, lines)
+
+	err = WriteFile(out, result)
+	if err != nil {
+		return 0, fmt.Errorf("diff files: %w", err)
+	}
+
+	return n, nil
 }

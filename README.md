@@ -7,7 +7,7 @@ List / File Manipulator
 ## Run
 
 ```
-A list manager tool for files
+List manipulator tool for files
 
 Usage:
   listy [command]
